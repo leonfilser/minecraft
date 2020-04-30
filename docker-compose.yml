@@ -1,0 +1,30 @@
+version: '3.5'
+
+networks:
+
+  traefik:
+    external:
+      name: traefik
+
+services:
+  minecraft:
+    build: .
+    image: paper_minecraft:1.15.2
+    restart: always
+    container_name: minecraft
+    networks:
+      - traefik 
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${PWD}/data:/minecraft
+    environment:
+      - EULA=true
+      - XMS=4G
+      - XMX=8G
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.minecraft.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.minecraft.entrypoints=minecraft"
+      - "traefik.tcp.routers.minecraft.service=minecraft-svc"
+      - "traefik.tcp.services.minecraft-svc.loadbalancer.server.port=25565"
